@@ -2,4 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design system — L'agent IA ajoute ses CSS variables ici */
+@layer base {
+  :root {
+    --primary: #C05C3B;
+    --primary-hover: #A04A2F;
+    --secondary: #2B3A67;
+    --accent: #D19E52;
+    --background: #FDFBF7;
+    --foreground: #2A2A2A;
+  }
+  
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--secondary);
+    font-family: inherit; /* overridden in layout */
+  }
+
+  .prose {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--secondary);
+    --tw-prose-links: var(--primary);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--primary);
+    --tw-prose-bullets: var(--primary);
+    --tw-prose-quotes: var(--secondary);
+    --tw-prose-quote-borders: var(--accent);
+  }
+}
+
+@layer utilities {
+  .bg-primary { background-color: var(--primary); }
+  .bg-primary-hover:hover { background-color: var(--primary-hover); }
+  .text-primary { color: var(--primary); }
+  .border-primary { border-color: var(--primary); }
+  
+  .bg-secondary { background-color: var(--secondary); }
+  .text-secondary { color: var(--secondary); }
+  .border-secondary { border-color: var(--secondary); }
+  
+  .bg-accent { background-color: var(--accent); }
+  .text-accent { color: var(--accent); }
+  .border-accent { border-color: var(--accent); }
+  
+  .bg-background { background-color: var(--background); }
+  .text-foreground { color: var(--foreground); }
+
+  .glass-effect {
+    background: rgba(253, 251, 247, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(253, 251, 247, 0.3);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-block bg-primary text-white font-medium px-8 py-3 rounded-md transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 bg-primary-hover;
+  }
+  .btn-secondary {
+    @apply inline-block bg-secondary text-white font-medium px-8 py-3 rounded-md transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:bg-opacity-90;
+  }
+  .btn-outline {
+    @apply inline-block border-2 border-primary text-primary font-medium px-8 py-3 rounded-md transition-all duration-300 hover:bg-primary hover:text-white bg-transparent;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }

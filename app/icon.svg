@@ -1,10 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="nsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#111827"/>
-      <stop offset="100%" stop-color="#374151"/>
-    </linearGradient>
-  </defs>
-  <rect width="128" height="128" rx="28" fill="url(#nsGrad)"/>
-  <text x="64" y="82" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="56" fill="#f9fafb">N</text>
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Arrière-plan terracotta/ocre -->
+  <rect width="400" height="400" rx="80" fill="#C05C3B" />
+  
+  <!-- Forme centrale évoquant un arc oriental / porte de souk -->
+  <path d="M 120,300 L 120,200 A 80,80 0 0,1 280,200 L 280,300 Z" fill="#2B3A67" />
+  
+  <!-- Ornements étoiles/motifs géométriques berbères -->
+  <polygon points="200,120 210,145 235,150 215,165 220,190 200,175 180,190 185,165 165,150 190,145" fill="#D19E52" />
+  
+  <!-- Formes suspendues (lanternes) -->
+  <path d="M 200,195 L 200,230" stroke="#D19E52" stroke-width="4" />
+  <circle cx="200" cy="245" r="15" fill="#D19E52" />
 </svg>

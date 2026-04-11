@@ -1,49 +1,48 @@
-import Link from "next/link";
+import { getCategoryBySlug, getPostsByCategory } from "@/lib/blog";
+import BlogCard from "@/components/BlogCard";
+import { notFound } from "next/navigation";
 
-import { getBlogPostsByCategory, getCategoryInfo } from "@/lib/blog";
+export const revalidate = 21600;
 
-type CategoryPageProps = {
-  params: Promise<{ slug: string }>;
-};
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const slug = (await params).slug;
+  const category = await getCategoryBySlug(slug);
+  
+  if (!category) {
+    return notFound();
+  }
 
-export default async function BlogCategoryPage({ params }: CategoryPageProps) {
-  const { slug } = await params;
-  const [posts, category] = await Promise.all([
-    getBlogPostsByCategory(slug, 24, 0),
-    getCategoryInfo(slug),
-  ]);
+  const posts = await getPostsByCategory(slug);
+  const displayTitle = category.label;
+  const displayDesc = category.description;
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
-      <header className="mb-8">
-        <Link href="/blog" className="text-sm text-slate-600 hover:underline">
-          Retour au blog
-        </Link>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-          {category?.label || slug}
-        </h1>
-      </header>
-
-      {posts.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 text-slate-600">
-          Aucun article dans cette catégorie.
+    <div className="bg-background min-h-screen py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <span className="text-accent tracking-widest uppercase font-bold text-sm mb-4 block">Catégorie</span>
+          <h1 className="text-4xl md:text-5xl font-playfair font-bold text-secondary mb-6">
+            {displayTitle}
+          </h1>
+          {displayDesc && (
+            <p className="text-lg text-gray-600 font-light">
+              {displayDesc}
+            </p>
+          )}
         </div>
-      ) : (
-        <ul className="space-y-4">
-          {posts.map((post) => (
-            <li key={post.id} className="rounded-lg border border-slate-200 bg-white p-5">
-              <h2 className="text-lg font-semibold text-slate-900">
-                <Link href={`/blog/${post.slug}`} className="hover:underline">
-                  {post.h1 || post.seo_title || post.slug}
-                </Link>
-              </h2>
-              {post.meta_description ? (
-                <p className="mt-2 text-slate-600">{post.meta_description}</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {posts.map((post) => (
+              <BlogCard key={post.slug} post={post} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-3xl mx-auto">
+            <p className="text-gray-500 font-medium italic text-lg">Aucun article publié pour le moment.</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

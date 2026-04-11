@@ -1,86 +1,106 @@
-import Link from "next/link";
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
+/* eslint-disable react/no-unescaped-entities, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+import { MarkdownLink } from "@/components/MarkdownLink";
+import { injectDofollowMarker } from "@/lib/dofollow";
+import { getBlogPostBySlug } from "@/lib/blog";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import Link from "next/link";
 
-import { MarkdownLink } from "@/components/MarkdownLink";
-import { getBlogPostBySlug } from "@/lib/blog";
+export const revalidate = 21600;
 
-type BlogPostPageProps = {
-  params: Promise<{ slug: string }>;
-};
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const slug = (await params).slug;
+  const post = await getBlogPostBySlug(slug);
+  
+  if (!post) return notFound();
 
-const buildAlternatesByLocale = (post: { slug: string; default_locale?: string | null; translations?: unknown }) => {
-  const siteOriginRaw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  const siteOrigin = siteOriginRaw
-    ? siteOriginRaw.replace(/\/+$/, "")
-    : `https://${(process.env.SITE_DOMAIN || "").replace(/^https?:\/\//, "").replace(/\/+$/, "")}`;
-
-  const buildArticleUrl = (articleSlug: string) =>
-    siteOrigin ? `${siteOrigin}/blog/${articleSlug}` : `/blog/${articleSlug}`;
-
-  const languages: Record<string, string> = {};
-  const defaultLocale = post.default_locale || "fr-FR";
-  languages[defaultLocale] = buildArticleUrl(post.slug);
-
-  if (post.translations && typeof post.translations === "object") {
-    for (const [locale, value] of Object.entries(post.translations as Record<string, unknown>)) {
-      if (!value || typeof value !== "object") continue;
-      const translation = value as Record<string, unknown>;
-      const translatedSlug = typeof translation.slug === "string" ? translation.slug : "";
-      const status = typeof translation.status === "string" ? translation.status : "published";
-
-      if (!translatedSlug || status !== "published") continue;
-      languages[locale] = buildArticleUrl(translatedSlug);
+  let displayH1 = post.h1;
+  let displayBody = post.body_md;
+  
+  if (post.slug !== slug && post.translations) {
+    for (const [_key, val] of Object.entries(post.translations)) {
+      if ((val as any).slug === slug) {
+        displayH1 = (val as any).h1 || displayH1;
+        displayBody = (val as any).body_md || displayBody;
+        break;
+      }
     }
   }
-
-  return languages;
-};
-
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
-  if (!post) return {};
-
-  return {
-    alternates: { languages: buildAlternatesByLocale(post) },
-    title: post.seo_title || post.h1 || post.slug,
-    description: post.meta_description || post.excerpt || "",
-  };
-}
-
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
-
-  if (!post) {
-    notFound();
-  }
+  
+  const bodyMd = injectDofollowMarker(displayBody || "");
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <Link href="/blog" className="text-sm text-slate-600 hover:underline">
-        Retour au blog
-      </Link>
+    <article className="bg-background min-h-screen py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+        <div className="mb-6">
+          <Link href="/blog" className="text-secondary hover:text-primary font-medium inline-flex items-center text-sm transition-colors uppercase tracking-widest">
+            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+            </svg>
+            Retour au journal
+          </Link>
+        </div>
 
-      <article className="mt-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-          {post.h1 || post.seo_title || post.slug}
-        </h1>
-        <p className="mt-2 text-sm text-slate-500">
-          {post.published_at
-            ? new Date(post.published_at).toLocaleDateString("fr-FR")
-            : "Date inconnue"}
-        </p>
+        <header className="mb-12 text-center">
+          {post.categories && post.categories.length > 0 && (
+            <Link 
+              href={`/blog/categorie/${post.categories[0].slug}`}
+              className="text-primary tracking-widest uppercase font-bold text-sm mb-4 block hover:underline"
+            >
+              {post.categories[0].label}
+            </Link>
+          )}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-secondary mb-8 leading-tight">
+            {displayH1}
+          </h1>
 
-        <div className="prose prose-slate mt-8 max-w-none">
+          <LanguageSwitcher post={post} currentSlug={slug} />
+        </header>
+
+        {post.cover?.file_url && (
+          <div className="relative aspect-[21/9] mb-16 rounded-2xl overflow-hidden shadow-2xl">
+            <Image 
+              src={post.cover.file_url} 
+              alt={post.cover.alt || displayH1}
+              fill
+              priority 
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 1024px"
+            />
+          </div>
+        )}
+
+        <div className="prose prose-lg md:prose-xl mx-auto prose-p:leading-relaxed prose-headings:font-playfair prose-headings:font-bold prose-img:rounded-xl">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>
-            {post.body_md || post.excerpt || ""}
+            {bodyMd}
           </ReactMarkdown>
         </div>
-      </article>
-    </main>
+
+        {post.author && (
+          <div className="flex items-center gap-6 mt-16 pt-10 border-t border-gray-200 bg-white p-8 rounded-2xl shadow-sm">
+            {post.author.avatar_url ? (
+              <Image 
+                src={post.author.avatar_url} 
+                alt={post.author.name}
+                width={80} 
+                height={80} 
+                className="rounded-full object-cover shrink-0 shadow-md" 
+              />
+            ) : (
+                <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-md text-white font-playfair text-2xl font-bold">
+                    {post.author.name.charAt(0)}
+                </div>
+            )}
+            <div>
+              <p className="font-playfair font-bold text-xl text-secondary mb-2">{post.author.name}</p>
+              {post.author.bio && <p className="text-gray-600 leading-relaxed text-sm">{post.author.bio}</p>}
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
   );
 }

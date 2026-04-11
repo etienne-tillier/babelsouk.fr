@@ -1,43 +1,35 @@
-import Link from "next/link";
 import { getPublishedBlogPosts } from "@/lib/blog";
+import BlogCard from "@/components/BlogCard";
+
+export const revalidate = 21600;
 
 export default async function BlogPage() {
-  const posts = await getPublishedBlogPosts(24, 0);
+  const posts = await getPublishedBlogPosts();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12">
-      <header className="mb-8">
-        <p className="text-sm text-slate-500">Blog</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">
-          Tous les articles
-        </h1>
-      </header>
-
-      {posts.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 text-slate-600">
-          Aucun article publié.
+    <div className="bg-background min-h-screen py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-playfair font-bold text-secondary mb-6">
+            Le Journal <span className="text-primary italic">BabelSouk</span>
+          </h1>
+          <p className="text-xl text-gray-600 font-light">
+            Découvrez nos derniers guides, astuces et sélections pour sublimer votre style atypique.
+          </p>
         </div>
-      ) : (
-        <ul className="space-y-4">
-          {posts.map((post) => (
-            <li key={post.id} className="rounded-lg border border-slate-200 bg-white p-5">
-              <h2 className="text-lg font-semibold text-slate-900">
-                <Link href={`/blog/${post.slug}`} className="hover:underline">
-                  {post.h1 || post.seo_title || post.slug}
-                </Link>
-              </h2>
-              {post.meta_description ? (
-                <p className="mt-2 text-slate-600">{post.meta_description}</p>
-              ) : null}
-              <p className="mt-3 text-xs text-slate-500">
-                {post.published_at
-                  ? new Date(post.published_at).toLocaleDateString("fr-FR")
-                  : "Date inconnue"}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {posts.map((post) => (
+              <BlogCard key={post.slug} post={post} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-24 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-3xl mx-auto">
+            <p className="text-gray-500 font-medium italic text-lg">Aucun article publié pour le moment.</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
