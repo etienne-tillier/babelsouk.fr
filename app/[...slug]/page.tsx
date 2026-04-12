@@ -29,14 +29,22 @@ const buildCandidates = (segments: string[]): string[] => {
   const decodedJoined = decodedSegments.join("-");
   const rawLeaf = segments[segments.length - 1] ?? "";
   const decodedLeaf = decodedSegments[decodedSegments.length - 1] ?? "";
+  const collapseDotExtensions = (value: string): string =>
+    value.replace(/\.([a-z0-9]{2,8})(?=$|[-_/])/gi, "$1");
 
   const variants = [
     toSlug(decodedJoined),
     toSlug(rawJoined),
     toSlug(rawJoined.replace(/%/g, "")),
+    toSlug(collapseDotExtensions(decodedJoined)),
+    toSlug(collapseDotExtensions(rawJoined)),
+    toSlug(collapseDotExtensions(rawJoined.replace(/%/g, ""))),
     toSlug(decodedLeaf),
     toSlug(rawLeaf),
     toSlug(rawLeaf.replace(/%/g, "")),
+    toSlug(collapseDotExtensions(decodedLeaf)),
+    toSlug(collapseDotExtensions(rawLeaf)),
+    toSlug(collapseDotExtensions(rawLeaf.replace(/%/g, ""))),
   ];
 
   return Array.from(new Set(variants.filter(Boolean)));
