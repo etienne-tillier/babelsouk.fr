@@ -14,12 +14,12 @@ export const revalidate = 21600;
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
   const post = await getBlogPostBySlug(slug);
-  
+
   if (!post) return notFound();
 
   let displayH1 = post.h1;
   let displayBody = post.body_md;
-  
+
   if (post.slug !== slug && post.translations) {
     for (const [_key, val] of Object.entries(post.translations)) {
       if ((val as any).slug === slug) {
@@ -29,7 +29,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       }
     }
   }
-  
+
   const bodyMd = injectDofollowMarker(displayBody || "");
 
   return (
@@ -46,7 +46,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         <header className="mb-12 text-center">
           {post.categories && post.categories.length > 0 && (
-            <Link 
+            <Link
               href={`/blog/categorie/${post.categories[0].slug}`}
               className="text-primary tracking-widest uppercase font-bold text-sm mb-4 block hover:underline"
             >
@@ -62,11 +62,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         {post.cover?.file_url && (
           <div className="relative aspect-[21/9] mb-16 rounded-2xl overflow-hidden shadow-2xl">
-            <Image 
-              src={post.cover.file_url} 
+            <Image
+              src={post.cover.file_url}
               alt={post.cover.alt || displayH1}
               fill
-              priority 
+              priority
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 1024px"
             />
@@ -82,12 +82,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {post.author && (
           <div className="flex items-center gap-6 mt-16 pt-10 border-t border-gray-200 bg-white p-8 rounded-2xl shadow-sm">
             {post.author.avatar_url ? (
-              <Image 
-                src={post.author.avatar_url} 
+              <Image
+                src={post.author.avatar_url}
                 alt={post.author.name}
-                width={80} 
-                height={80} 
-                className="rounded-full object-cover shrink-0 shadow-md" 
+                width={80}
+                height={80}
+                className="rounded-full object-cover shrink-0 shadow-md"
               />
             ) : (
                 <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-md text-white font-playfair text-2xl font-bold">
